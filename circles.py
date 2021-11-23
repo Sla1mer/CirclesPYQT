@@ -25,7 +25,7 @@ class CircleWindow(QMainWindow):
         self.qp.end()
 
     def draw(self):
-        self.qp.setBrush(QColor(randint(1, 255), randint(1, 100), randint(1, 100)))
+        self.qp.setBrush(QColor(252, 227, 3))
         r = randint(1, 100)
         x = randint(0, 640)
         y = randint(0, 480)
