@@ -1,13 +1,6 @@
 import pygame
 import os
 import sys
-import argparse
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("map", type=str, nargs="?", default="map.map")
-args = parser.parse_args()
-map_file = args.map
 
 
 def load_image(name, color_key=None):
@@ -26,7 +19,7 @@ def load_image(name, color_key=None):
 
 
 pygame.init()
-screen_size = (400, 400)
+screen_size = (500, 500)
 screen = pygame.display.set_mode(screen_size)
 FPS = 50
 
@@ -37,6 +30,13 @@ tile_images = {
 player_image = load_image('mar.png')
 
 tile_width = tile_height = 50
+
+
+class ScreenFrame(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+        self.rect = (0, 0, 500, 500)
 
 
 class SpriteGroup(pygame.sprite.Group):
@@ -65,7 +65,6 @@ class Tile(Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
-        self.abs_pos = (self.rect.x, self.rect.y)
 
 
 class Player(Sprite):
@@ -77,25 +76,9 @@ class Player(Sprite):
         self.pos = (pos_x, pos_y)
 
     def move(self, x, y):
-        camera.dx -= tile_width * (x - self.pos[0])
-        camera.dy -= tile_height * (y - self.pos[1])
         self.pos = (x, y)
-        for sprite in sprite_group:
-            camera.apply(sprite)
-
-
-class Camera:
-    def __init__(self):
-        self.dx = 0
-        self.dy = 0
-
-    def apply(self, obj):
-        obj.rect.x = obj.abs_pos[0] + self.dx
-        obj.rect.y = obj.abs_pos[1] + self.dy
-
-    def update(self, target):
-        self.dx = 0
-        self.dy = 0
+        self.rect = self.image.get_rect().move(
+            tile_width * self.pos[0] + 15, tile_height * self.pos[1] + 5)
 
 
 player = None
@@ -112,8 +95,8 @@ def terminate():
 
 def start_screen():
     intro_text = ["Перемещение героя", "",
-                  "",
-                  "Камера"]
+                  "Герой двигается",
+                  "Карта на месте"]
 
     fon = pygame.transform.scale(load_image('fon.jpeg'), screen_size)
     screen.blit(fon, (0, 0))
@@ -164,6 +147,11 @@ def generate_level(level):
 
 def move(hero, movement):
     x, y = hero.pos
+    print(level_map[x][y - 1])
+    print(level_map[x][y + 1])
+    print(level_map[x - 1][y])
+    print(level_map[x][y + 1])
+    print()
     if movement == "up":
         if y > 0 and level_map[y - 1][x] == ".":
             hero.move(x, y - 1)
@@ -179,10 +167,8 @@ def move(hero, movement):
 
 
 start_screen()
-camera = Camera()
-level_map = load_level(map_file)
+level_map = load_level("map2.map")
 hero, max_x, max_y = generate_level(level_map)
-camera.update(hero)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
